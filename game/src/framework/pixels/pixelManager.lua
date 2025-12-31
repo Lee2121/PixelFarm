@@ -59,6 +59,7 @@ function PixelManager:update(dt)
 	self.pixelMesh:setVertices(self.pixelPoints, 1, #self.pixelPoints)
 	self.time = self.time + dt
 	self.pixelMeshShader:send("time", self.time)
+	self.pixelMeshShader:send("speed", 50)
 end
 
 function PixelManager:draw()
