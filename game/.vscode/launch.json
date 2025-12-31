@@ -1,28 +1,24 @@
 {
-	"version": "0.2.0",
-	"configurations": [
-		{
-			"type": "lua-local",
-			"request": "launch",
-			"name": "Debug",
-			"program": {
-				"command": "love"
-			},
-			"args": [
-				".",
-				"debug"
-			],
-		},
-		{
-			"type": "lua-local",
-			"request": "launch",
-			"name": "Release",
-			"program": {
-				"command": "love"
-			},
-			"args": [
-				".",
-			],
-		},
-	]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Love",
+            "type": "lua-local",
+            "request": "launch",
+            "program": {
+                "command": "love"
+            },
+            "args": [".", "debug"],
+            "scriptRoots": [".", "src"]
+        },
+        {
+        "name": "Release Love",
+        "type": "lua-local",
+        "request": "launch",
+        "program": {
+            "command": "love"
+        },
+        "args": ["."]
+        },
+    ]
 }
