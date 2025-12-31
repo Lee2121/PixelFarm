@@ -22,6 +22,8 @@ function PixelManager:init()
 
 	self.possiblePixelColors = { PixelAtlas.red, PixelAtlas.green, PixelAtlas.blue }
 	self.spriteBatch = love.graphics.newSpriteBatch(PixelAtlas.image)
+
+	self.pixelShader = love.graphics.newShader("src/framework/pixels/pixelShader.glsl")
 end
 
 function PixelManager:spawnPixels(num)
@@ -55,7 +57,11 @@ function PixelManager:draw()
 	-- end
 	-- love.graphics.draw(self.spriteBatch)
 
-	love.graphics.points(self.pixelPoints)
+	--love.graphics.points(self.pixelPoints)
+	self.pixelShader:send("pixelPositions", self.pixelLocations)
+	love.graphics.setShader(self.pixelShader)
+	love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+	love.graphics.setShader()
 end
 
 return PixelManager
