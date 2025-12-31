@@ -1,87 +1,63 @@
-local PixelAtlas = {}
-
-function PixelAtlas:init()
-	self.image = love.graphics.newImage("assets/PixelAtlas.png")
-	self.black = love.graphics.newQuad(0, 0, 1, 1, self.image)
-	self.white = love.graphics.newQuad(0, 1, 1, 1, self.image)
-	self.red = love.graphics.newQuad(0, 2, 1, 1, self.image)
-	self.green = love.graphics.newQuad(0, 3, 1, 1, self.image)
-	self.blue = love.graphics.newQuad(1, 0, 1, 1, self.image)
-end
-
 local PixelManager = {
-	pixelLocations = {},
-	pixelColors = {},
-	pixelBehaviors = {},
-
-	pixelPoints = {}
+	pixelData = {},
+	pixelUpdateTimes = {}
 }
 
 local PixelMeshVertextFormat = {
 	{"VertexPosition", "float", 2},
 	{"VertexColor", "byte", 4},
+	{"VertexVelocity", "float", 2}
 }
 
 function PixelManager:init()
-	PixelAtlas:init()
 	love.graphics.setPointSize(5)
-	self.possiblePixelColors = { PixelAtlas.red, PixelAtlas.green, PixelAtlas.blue }
-	self.spriteBatch = love.graphics.newSpriteBatch(PixelAtlas.image, 1000000, "dynamic")
-
-	--self.pixelShader = love.graphics.newShader("src/framework/pixels/pixelShader.glsl")
 
 	self.pixelMesh = love.graphics.newMesh(PixelMeshVertextFormat, MAX_PIXELS, "points", "dynamic")
 	self.pixelMeshShader = love.graphics.newShader("src/framework/pixels/pixelMeshShader.glsl")
 	self.time = 0
+	self.simpleTimer = 0
 end
 
 function PixelManager:spawnPixels(num)
 
 	for i = 1, num, 1 do
-		-- location
+
 		local locX, locY = math.random(love.graphics.getWidth() * -.5, love.graphics.getWidth() * .5), math.random(love.graphics.getHeight() * -.5, love.graphics.getHeight() * .5)
-		table.insert(self.pixelLocations, { locX, locY })
-		
-		-- color
-		local randColorIndex = math.random(#self.possiblePixelColors)
-		local randColor = self.possiblePixelColors[randColorIndex]
-		table.insert(self.pixelColors, randColor)
-		
-		-- behavior
-		
-		math.randomseed(i)
-		local newPoint = { locX, locY, math.random(), math.random(), math.random(), 1 }
-		table.insert(self.pixelPoints, newPoint)
+	
+		local newPoint = { locX, locY, math.random(), math.random(), math.random(), 1, math.random(50), math.random(50) }
+		table.insert(self.pixelData, newPoint)
+		table.insert(self.pixelUpdateTimes, self.time)
 	end
 end
 
 function PixelManager:update(dt)
-	self.pixelMesh:setVertices(self.pixelPoints, 1, #self.pixelPoints)
+	self.pixelMesh:setVertices(self.pixelData, 1, #self.pixelData)
 	self.time = self.time + dt
-	self.pixelMeshShader:send("time", self.time)
-	self.pixelMeshShader:send("speed", 50)
+	self.simpleTimer = self.simpleTimer + dt
+	self.pixelMeshShader:send("time", self.simpleTimer)
+	--self.pixelMeshShader:send("speed", 50)
+
+	--if self.simpleTimer >= 2 then
+		for pixel = 1, #self.pixelData, 1 do
+
+			-- calculate where the GPU thinks this pixel is
+			-- Pixel Position 		 = 		pixel location 		+ (		pixel velocity      * 			since last update 				)
+			self.pixelData[pixel][1] = self.pixelData[pixel][1] + (self.pixelData[pixel][7] * (self.simpleTimer))
+			self.pixelData[pixel][2] = self.pixelData[pixel][2] + (self.pixelData[pixel][8] * (self.simpleTimer))
+
+			-- assign a new velocity
+			self.pixelData[pixel][7] = math.random(-50, 50)
+			self.pixelData[pixel][8] = math.random(-50, 50)
+
+			-- store off the new updated time
+			self.pixelUpdateTimes[pixel] = self.time
+		end
+		self.simpleTimer = 0
+	--end
+
 end
 
 function PixelManager:draw()
-	-- SPRITE BATCH
-	-- self.spriteBatch:clear()
-	-- for pixel = 1, #self.pixelColors, 1 do
-	-- 	self.spriteBatch:add(self.pixelColors[pixel], unpack(self.pixelLocations[pixel]))
-	-- end
-	-- love.graphics.draw(self.spriteBatch)
-	-- END SPRITE BATCH
-
-	-- PIXEL POINTS
-	--love.graphics.points(self.pixelPoints)
-	-- END PIXEL POINTS
-
-	-- PIXEL SHADER
-	-- self.pixelShader:send("pixelPositions", self.pixelLocations)
-	-- love.graphics.setShader(self.pixelShader)
-	-- love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
-	-- love.graphics.setShader()
-	-- END PIXEL SHADER
-
 	-- PIXEL MESH
 	love.graphics.setShader(self.pixelMeshShader)
 	love.graphics.draw(self.pixelMesh)
