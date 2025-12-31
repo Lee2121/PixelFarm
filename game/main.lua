@@ -11,7 +11,7 @@ function love.load()
 	BackgroundGrid:init()
 
 	PixelManager:init()
-	PixelManager:spawnPixels(1000000)
+	PixelManager:spawnPixels(100000)
 end
 
 function love.update(dt)
