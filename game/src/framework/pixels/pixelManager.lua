@@ -15,11 +15,8 @@ local PixelMeshVertextFormat = {
 
 function PixelManager:init()
 	love.graphics.setPointSize(5)
-
 	self.pixelMesh = love.graphics.newMesh(PixelMeshVertextFormat, MAX_PIXELS, "points", "dynamic")
 	self.pixelMeshShader = love.graphics.newShader("src/framework/pixels/pixelMeshShader.glsl")
-	self.time = 0
-	self.simpleTimer = 0
 end
 
 function PixelManager:spawnPixels(num)
@@ -39,10 +36,6 @@ function PixelManager:update(dt)
 	if #self.pixelData == 0 then return end
 
 	self.pixelMesh:setVertices(self.pixelData, 1, #self.pixelData)
-	self.time = self.time + dt
-	self.simpleTimer = self.simpleTimer + dt
-
-	local flowX, flowY
 
 	local function clampVelocity(current, max)
 		if math.abs(current) > max then
@@ -51,30 +44,36 @@ function PixelManager:update(dt)
 		return current
 	end
 
+	local flowX, flowY
+	local pixelData
+	local pixelVelocity
+
 	for pixel = 1, #self.pixelData, 1 do
 
+		pixelData = self.pixelData[pixel]
+		pixelVelocity = self.pixelVelocity[pixel]
+
 		-- bounce on x
-		if self.pixelData[pixel][1] > SimulationBoundary.boundaryRect.xMax or self.pixelData[pixel][1] < SimulationBoundary.boundaryRect.xMin then
-			self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] * -BOUNDARY_BOUNCE_RESTITUTION
+		if pixelData[1] > SimulationBoundary.boundaryRect.xMax or pixelData[1] < SimulationBoundary.boundaryRect.xMin then
+			pixelVelocity[1] = pixelVelocity[1] * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
 		-- bounce on y
-		if self.pixelData[pixel][2] > SimulationBoundary.boundaryRect.yMax or self.pixelData[pixel][2] < SimulationBoundary.boundaryRect.yMin then
-			self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] * -BOUNDARY_BOUNCE_RESTITUTION
+		if pixelData[2] > SimulationBoundary.boundaryRect.yMax or pixelData[2] < SimulationBoundary.boundaryRect.yMin then
+			pixelVelocity[2] = pixelVelocity[2] * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
 		-- calculate the new velocity
-		flowX, flowY = FlowField:getFlowAtWorldCoord(self.pixelData[pixel][1], self.pixelData[pixel][2])
-		self.pixelVelocity[pixel][1] = clampVelocity(self.pixelVelocity[pixel][1] + flowX, MAX_PIXEL_SPEED)
-		self.pixelVelocity[pixel][2] = clampVelocity(self.pixelVelocity[pixel][2] + flowY, MAX_PIXEL_SPEED)
-		--self.pixelVelocity[pixel][1] = clampAbs(self.pixelVelocity[pixel][1] + ((mouseX - self.pixelData[pixel][1]) * .1 * dt), 30)
-		--self.pixelVelocity[pixel][2] = clampAbs(self.pixelVelocity[pixel][2] + ((mouseY - self.pixelData[pixel][2]) * .1 * dt), 30)
+		flowX, flowY = FlowField:getFlowAtWorldCoord(pixelData[1], pixelData[2])
+		pixelVelocity[1] = clampVelocity(pixelVelocity[1] + flowX, MAX_PIXEL_SPEED)
+		pixelVelocity[2] = clampVelocity(pixelVelocity[2] + flowY, MAX_PIXEL_SPEED)
+		--pixelVelocity[1] = clampAbs(pixelVelocity[1] + ((mouseX - pixelData[1]) * .1 * dt), 30)
+		--pixelVelocity[2] = clampAbs(pixelVelocity[2] + ((mouseY - pixelData[2]) * .1 * dt), 30)
 
 		-- apply pixel's current velocity to its position
-		self.pixelData[pixel][1] = self.pixelData[pixel][1] + (self.pixelVelocity[pixel][1] * dt)
-		self.pixelData[pixel][2] = self.pixelData[pixel][2] + (self.pixelVelocity[pixel][2] * dt)
+		pixelData[1] = pixelData[1] + (pixelVelocity[1] * dt)
+		pixelData[2] = pixelData[2] + (pixelVelocity[2] * dt)
 	end
-	self.simpleTimer = 0
 end
 
 function PixelManager:draw()
