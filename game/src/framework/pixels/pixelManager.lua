@@ -32,6 +32,13 @@ function PixelManager:spawnPixels(num)
 	end
 end
 
+function PixelManager:reset()
+	local numOriginalPixels = #self.pixelData
+	self.pixelData = {}
+	self.pixelVelocity = {}
+	self:spawnPixels(numOriginalPixels)
+end
+
 function PixelManager:update(dt)
 	if #self.pixelData == 0 then return end
 

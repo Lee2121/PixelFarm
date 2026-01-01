@@ -2,13 +2,15 @@ local FlowField = {}
 
 local FlowFieldTile = require "src.framework.flowField.flowFieldTile"
 
+local REDUCTION_RATE = 1
+
 function FlowField:init()
 	self.tiles = {}
 	self.modifiers = {}
 	self.edgeLength = SimulationBoundary.boundaryRect.width / TILE_SIZE
 
 	for tileIndex = 1, (self.edgeLength * self.edgeLength), 1 do
-		self.tiles[tileIndex] = FlowFieldTile()
+		self.tiles[tileIndex] = FlowFieldTile(tileIndex, unpack({self:calcTilePos(tileIndex)}))
 	end
 end
 
@@ -30,9 +32,15 @@ function FlowField:update(dt)
 		self.modifiers[i]:initFrame()
 	end
 	for tileIndex, tile in ipairs(self.tiles) do
-		for modifierIndex = 1, #self.modifiers, 1 do
-			-- TODO - modifiers should be apply in an additive way
-			tile.flowX, tile.flowY = self.modifiers[modifierIndex]:calcTileFlow(tileIndex)
+		for _, modifier in ipairs(self.modifiers) do
+			if modifier:isTileInRange(tile) then
+				-- TODO - modifiers should be apply in an additive way
+				tile.flowX, tile.flowY = modifier:calcTileFlow(tile)
+			else
+				-- reduce back to 0
+				tile.flowX = math.max(math.abs(tile.flowX) - dt * REDUCTION_RATE, 0) * (tile.flowX > 0 and 1 or -1)
+				tile.flowY = math.max(math.abs(tile.flowY) - dt * REDUCTION_RATE, 0) * (tile.flowY > 0 and 1 or -1)  
+			end
 		end
 	end
 end
@@ -47,10 +55,16 @@ function FlowField:getFlowAtWorldCoord(x, y)
 	return self.tiles[tileIndex].flowX, self.tiles[tileIndex].flowY
 end
 
-function FlowField:getTilePos(tileIndex)
+function FlowField:calcTilePos(tileIndex)
 	local row = (tileIndex - 1) % self.edgeLength
 	local column = (tileIndex - 1 - row) / self.edgeLength
 	return row * TILE_SIZE, column * TILE_SIZE
+end
+
+function FlowField:reset()
+	for _, tile in ipairs(self.tiles) do
+		tile.flowX, tile.flowY = 0, 0
+	end
 end
 
 function FlowField:debugDraw()
@@ -58,7 +72,7 @@ function FlowField:debugDraw()
 	love.graphics.setLineWidth(1)
 	local tileX, tileY, tileCenterX, tileCenterY
 	for index, tile in ipairs(self.tiles) do
-		tileX, tileY = self:getTilePos(index)
+		tileX, tileY = self:calcTilePos(index)
 		tileCenterX, tileCenterY = tileX + (TILE_SIZE / 2), tileY + (TILE_SIZE / 2)
 		
 		-- draw cells

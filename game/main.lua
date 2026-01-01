@@ -6,7 +6,7 @@ SimulationBoundary = require "src.framework.simulationBoundary"
 
 FlowField = require "src.framework.flowField.flowField"
 FlowFieldModifiers = require "src.framework.flowField.flowFieldModifier"
-MouseFieldModifier = FlowFieldModifier_Mouse(50)
+MouseFieldModifier = FlowFieldModifier_Mouse(1000)
 
 DebugCommands = require "src.framework.debugCommands"
 
@@ -21,7 +21,7 @@ function love.load()
 
 	SimulationBoundary:init(512)
 
-	camTargetX, camTargetY = (SimulationBoundary.boundaryRect.width / 2) - 50, SimulationBoundary.boundaryRect.height / 2
+	camTargetX, camTargetY = (SimulationBoundary.boundaryRect.width / 2) - 70, SimulationBoundary.boundaryRect.height / 2
 	GameCamera = HumpCamera(camTargetX, camTargetY)
 
 	BackgroundGrid:init()
