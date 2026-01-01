@@ -1,5 +1,8 @@
 local BOUNDARY_PADDING = -300
 
+local MAX_PIXEL_SPEED = 1000
+local BOUNDARY_BOUNCE_RESTITUTION = .5
+
 local PixelManager = {
 	pixelData = {},
 	pixelVelocity = {}
@@ -34,29 +37,36 @@ end
 
 function PixelManager:update(dt)
 	if #self.pixelData == 0 then return end
-	
+
 	self.pixelMesh:setVertices(self.pixelData, 1, #self.pixelData)
 	self.time = self.time + dt
 	self.simpleTimer = self.simpleTimer + dt
 
 	local flowX, flowY
 
+	local function clampVelocity(current, max)
+		if math.abs(current) > max then
+			return max * (current > 0 and 1 or -1)
+		end
+		return current
+	end
+
 	for pixel = 1, #self.pixelData, 1 do
 
 		-- bounce on x
 		if self.pixelData[pixel][1] > SimulationBoundary.boundaryRect.xMax or self.pixelData[pixel][1] < SimulationBoundary.boundaryRect.xMin then
-			self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] * -1
+			self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
 		-- bounce on y
 		if self.pixelData[pixel][2] > SimulationBoundary.boundaryRect.yMax or self.pixelData[pixel][2] < SimulationBoundary.boundaryRect.yMin then
-			self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] * -1
+			self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
 		-- calculate the new velocity
 		flowX, flowY = FlowField:getFlowAtWorldCoord(self.pixelData[pixel][1], self.pixelData[pixel][2])
-		self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] + flowX
-		self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] + flowY
+		self.pixelVelocity[pixel][1] = clampVelocity(self.pixelVelocity[pixel][1] + flowX, MAX_PIXEL_SPEED)
+		self.pixelVelocity[pixel][2] = clampVelocity(self.pixelVelocity[pixel][2] + flowY, MAX_PIXEL_SPEED)
 		--self.pixelVelocity[pixel][1] = clampAbs(self.pixelVelocity[pixel][1] + ((mouseX - self.pixelData[pixel][1]) * .1 * dt), 30)
 		--self.pixelVelocity[pixel][2] = clampAbs(self.pixelVelocity[pixel][2] + ((mouseY - self.pixelData[pixel][2]) * .1 * dt), 30)
 
