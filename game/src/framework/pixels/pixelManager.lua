@@ -23,7 +23,7 @@ function PixelManager:spawnPixels(num)
 
 	for i = 1, num, 1 do
 
-		local locX, locY = SimulationBoundary:getRandomPointInBoundary()
+		local locX, locY = SimulationBoundary:getRandomPointInBoundary(.99)
 	
 		local newPoint = { locX, locY, math.random(), math.random(), math.random(), 1 }
 

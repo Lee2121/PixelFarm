@@ -15,11 +15,11 @@ local camTargetX, camTargetY = 0, 0
 
 function love.load()
 	love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-	
-	camTargetX, camTargetY = love.graphics.getWidth() / 2, love.graphics.getHeight() / 2
-	GameCamera = HumpCamera(camTargetX, camTargetY)
 
-	SimulationBoundary:init(-500)
+	SimulationBoundary:init(1024)
+
+	camTargetX, camTargetY = SimulationBoundary.boundaryRect.width / 2, SimulationBoundary.boundaryRect.height / 2
+	GameCamera = HumpCamera(camTargetX, camTargetY)
 
 	BackgroundGrid:init()
 
@@ -55,14 +55,18 @@ function love.update(dt)
 end
 
 function love.draw()
-	
+		
 	BackgroundGrid:draw()
-	FlowField:draw()
 
 	GameCamera:attach()
-		SimulationBoundary:draw()
+	
 		PixelManager:draw()
+		SimulationBoundary:draw()
+		FlowField:draw()
+
 	GameCamera:detach()
+
+	
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end

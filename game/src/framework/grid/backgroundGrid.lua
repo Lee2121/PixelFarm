@@ -2,8 +2,9 @@ local BackgroundGrid = {}
 
 function BackgroundGrid:init()
 	self.gridShader = love.graphics.newShader("src/framework/grid/gridShader.glsl")
-	self.gridShader:send("gridSize", 128)
-	self.gridShader:send("lineColor", { .1, .1, .1, 1 })
+	self.gridShader:send("gridSize", 256)
+	self.gridShader:send("lineColor", { .2, .2, .2, 1 })
+	self.gridShader:send("offset", { 112, 212 })
 end
 
 function BackgroundGrid:draw()
