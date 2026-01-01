@@ -37,7 +37,7 @@ function FlowFieldModifier_Base:isTileInRange(tile)
 	return dist <= self.size
 end
 
-function FlowFieldModifier_Base:initFrame()
+function FlowFieldModifier_Base:initUpdate(dt)
 end
 
 function FlowFieldModifier_Base:calcTileFlow(tile)
@@ -45,14 +45,22 @@ function FlowFieldModifier_Base:calcTileFlow(tile)
 end
 
 FlowFieldModifier_Mouse = FlowFieldModifier_Base:extend()
-function FlowFieldModifier_Mouse:initFrame()
+function FlowFieldModifier_Mouse:new()
+	self.prevPosX, self.prevPosY = self.posX, self.posY
+	self.mouseVelX, self.mouseVelY = 0, 0
+end
+
+function FlowFieldModifier_Mouse:initUpdate(dt)
 	self.posX, self.posY = GameCamera:mousePosition()
+	self.mouseVelX, self.mouseVelY = (self.prevPosX - self.posX) / dt, (self.prevPosY - self.posY) / dt
 
 	if love.mouse.isDown(1) then
 		self.bEnabled = true
 	else
 		self.bEnabled = false
 	end
+
+	self.prevPosX, self.prevPosY = self.posX, self.posY
 end
 
 -- declare variables here so they aren't redefined every time we run calcTileFlow
@@ -66,8 +74,13 @@ function FlowFieldModifier_Mouse:calcTileFlow(tile)
 	dy = (self.posY - tile.posY)
 	
 	if dist > 0 then
+		-- calc normalized direction
 		flowX = dx/dist
 		flowY = dy/dist
+	
+		-- apply velocity to direction
+		flowX = flowX + (self.mouseVelX * -.001)
+		flowY = flowY + (self.mouseVelY * -.001)
 	else
 		flowX = 0
 		flowY = 0

@@ -29,7 +29,7 @@ end
 
 function FlowField:update(dt)
 	for i = 1, #self.modifiers, 1 do
-		self.modifiers[i]:initFrame()
+		self.modifiers[i]:initUpdate(dt)
 	end
 	for tileIndex, tile in ipairs(self.tiles) do
 		for _, modifier in ipairs(self.modifiers) do
