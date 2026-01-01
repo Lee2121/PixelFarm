@@ -1,12 +1,13 @@
+local BOUNDARY_PADDING = -300
+
 local PixelManager = {
 	pixelData = {},
-	pixelUpdateTimes = {}
+	pixelVelocity = {}
 }
 
 local PixelMeshVertextFormat = {
 	{"VertexPosition", "float", 2},
 	{"VertexColor", "byte", 4},
-	{"VertexVelocity", "float", 2}
 }
 
 function PixelManager:init()
@@ -22,11 +23,12 @@ function PixelManager:spawnPixels(num)
 
 	for i = 1, num, 1 do
 
-		local locX, locY = math.random(love.graphics.getWidth() * -.5, love.graphics.getWidth() * .5), math.random(love.graphics.getHeight() * -.5, love.graphics.getHeight() * .5)
+		local locX, locY = SimulationBoundary:getRandomPointInBoundary()
 	
-		local newPoint = { locX, locY, math.random(), math.random(), math.random(), 1, math.random(50), math.random(50) }
+		local newPoint = { locX, locY, math.random(), math.random(), math.random(), 1 }
+
 		table.insert(self.pixelData, newPoint)
-		table.insert(self.pixelUpdateTimes, self.time)
+		table.insert(self.pixelVelocity, { math.random(-10, 10), math.random(-10, 10) } )
 	end
 end
 
@@ -34,35 +36,34 @@ function PixelManager:update(dt)
 	self.pixelMesh:setVertices(self.pixelData, 1, #self.pixelData)
 	self.time = self.time + dt
 	self.simpleTimer = self.simpleTimer + dt
-	self.pixelMeshShader:send("time", self.simpleTimer)
-	--self.pixelMeshShader:send("speed", 50)
 
-	--if self.simpleTimer >= 2 then
-		for pixel = 1, #self.pixelData, 1 do
+	for pixel = 1, #self.pixelData, 1 do
 
-			-- calculate where the GPU thinks this pixel is
-			-- Pixel Position 		 = 		pixel location 		+ (		pixel velocity      * 			since last update 				)
-			self.pixelData[pixel][1] = self.pixelData[pixel][1] + (self.pixelData[pixel][7] * (self.simpleTimer))
-			self.pixelData[pixel][2] = self.pixelData[pixel][2] + (self.pixelData[pixel][8] * (self.simpleTimer))
-
-			-- assign a new velocity
-			self.pixelData[pixel][7] = math.random(-50, 50)
-			self.pixelData[pixel][8] = math.random(-50, 50)
-
-			-- store off the new updated time
-			self.pixelUpdateTimes[pixel] = self.time
+		-- bounce on x
+		if self.pixelData[pixel][1] > SimulationBoundary.boundaryRect.xMax or self.pixelData[pixel][1] < SimulationBoundary.boundaryRect.xMin then
+			self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] * -1
 		end
-		self.simpleTimer = 0
-	--end
 
+		-- bounce on y
+		if self.pixelData[pixel][2] > SimulationBoundary.boundaryRect.yMax or self.pixelData[pixel][2] < SimulationBoundary.boundaryRect.yMin then
+			self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] * -1
+		end
+
+		-- calculate the new velocity
+		--self.pixelVelocity[pixel][1] = clampAbs(self.pixelVelocity[pixel][1] + ((mouseX - self.pixelData[pixel][1]) * .1 * dt), 30)
+		--self.pixelVelocity[pixel][2] = clampAbs(self.pixelVelocity[pixel][2] + ((mouseY - self.pixelData[pixel][2]) * .1 * dt), 30)
+
+		-- apply pixel's current velocity to its position
+		self.pixelData[pixel][1] = self.pixelData[pixel][1] + (self.pixelVelocity[pixel][1] * dt)
+		self.pixelData[pixel][2] = self.pixelData[pixel][2] + (self.pixelVelocity[pixel][2] * dt)
+	end
+	self.simpleTimer = 0
 end
 
 function PixelManager:draw()
-	-- PIXEL MESH
 	love.graphics.setShader(self.pixelMeshShader)
 	love.graphics.draw(self.pixelMesh)
 	love.graphics.setShader()
-	-- END PIXEL MESH
 end
 
 return PixelManager

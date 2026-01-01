@@ -3,22 +3,36 @@ BackgroundGrid = require "src.framework.grid.backgroundGrid"
 
 PixelManager = require "src.framework.pixels.pixelManager"
 
-MAX_PIXELS = 1000000
+FlowField = require "src.framework.flowField.flowField"
+
+SimulationBoundary = require "src.framework.simulationBoundary"
+
+MAX_PIXELS = 100000
 
 GameCamera = {}
-local CameraSpeed = 100
+local CAMERA_SPEED = 500
+local camTargetX, camTargetY = 0, 0
 
 function love.load()
 	love.graphics.setDefaultFilter( 'nearest', 'nearest' )
-	GameCamera = HumpCamera(0, 0)
+	
+	camTargetX, camTargetY = love.graphics.getWidth() / 2, love.graphics.getHeight() / 2
+	GameCamera = HumpCamera(camTargetX, camTargetY)
+
+	SimulationBoundary:init(-500)
+
 	BackgroundGrid:init()
 
+	FlowField:init()
+
 	PixelManager:init()
-	PixelManager:spawnPixels(100000)
+	PixelManager:spawnPixels(MAX_PIXELS)
 end
 
 function love.update(dt)
 	
+	FlowField:update(dt)
+
 	PixelManager:update(dt)
 
 	local cameraInput = { 0, 0 }
@@ -35,21 +49,20 @@ function love.update(dt)
 		cameraInput[2] = cameraInput[2] + 1
 	end
 
-	GameCamera:move(cameraInput[1] * dt * CameraSpeed, cameraInput[2] * dt * CameraSpeed)
+	camTargetX = camTargetX + cameraInput[1] * dt * CAMERA_SPEED
+	camTargetY = camTargetY + cameraInput[2] * dt * CAMERA_SPEED
+	GameCamera:lockPosition(camTargetX, camTargetY, GameCamera.smooth.damped(2))
 end
 
 function love.draw()
 	
 	BackgroundGrid:draw()
+	FlowField:draw()
 
 	GameCamera:attach()
-
-	-- draw game objects here
-	--love.graphics.rectangle("fill", 0, 0, 1, 1)
-	PixelManager:draw()
-
+		SimulationBoundary:draw()
+		PixelManager:draw()
 	GameCamera:detach()
-
 
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
 end
