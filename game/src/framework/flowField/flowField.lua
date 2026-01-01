@@ -65,6 +65,7 @@ function FlowField:getTilePos(tileIndex)
 end
 
 function FlowField:debugDraw()
+	if not DebugCommands.bDebugDrawFlowField then return end
 	love.graphics.setLineWidth(1)
 	local tileX, tileY, tileCenterX, tileCenterY
 	for index, tile in ipairs(self.tiles) do
@@ -72,9 +73,11 @@ function FlowField:debugDraw()
 		tileCenterX, tileCenterY = tileX + (TILE_SIZE / 2), tileY + (TILE_SIZE / 2)
 		
 		-- draw cells
+		love.graphics.setColor(.3, .3, .3, 1)
 		love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)
 		
 		-- draw flow direction
+		love.graphics.setColor(1, 1, 1, 1)
 		love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
 	end
 end

@@ -17,5 +17,4 @@ function SimulationBoundary:draw()
 	love.graphics.rectangle("line", self.boundaryRect.xMin, self.boundaryRect.yMin, self.boundaryRect.width, self.boundaryRect.height )
 end
 
-
 return SimulationBoundary

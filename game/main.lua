@@ -2,10 +2,10 @@ HumpCamera = require "lib.hump.camera"
 BackgroundGrid = require "src.framework.grid.backgroundGrid"
 
 PixelManager = require "src.framework.pixels.pixelManager"
-
 FlowField = require "src.framework.flowField.flowField"
-
 SimulationBoundary = require "src.framework.simulationBoundary"
+
+DebugCommands = require "src.framework.debugCommands"
 
 MAX_PIXELS = 100000
 
@@ -18,7 +18,7 @@ function love.load()
 
 	SimulationBoundary:init(512)
 
-	camTargetX, camTargetY = SimulationBoundary.boundaryRect.width / 2, SimulationBoundary.boundaryRect.height / 2
+	camTargetX, camTargetY = (SimulationBoundary.boundaryRect.width / 2) - 50, SimulationBoundary.boundaryRect.height / 2
 	GameCamera = HumpCamera(camTargetX, camTargetY)
 
 	BackgroundGrid:init()
@@ -59,6 +59,10 @@ function love.update(dt)
 	GameCamera:lockPosition(camTargetX, camTargetY, GameCamera.smooth.damped(2))
 end
 
+function love.keypressed(key, scancode, isRepeat)
+	DebugCommands:handleKeyPressed(key)
+end
+
 function love.draw()
 		
 	BackgroundGrid:draw()
@@ -67,7 +71,7 @@ function love.draw()
 	
 		PixelManager:draw()
 		SimulationBoundary:draw()
-		--FlowField:debugDraw()
+		FlowField:debugDraw()
 
 	GameCamera:detach()
 
