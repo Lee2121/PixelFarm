@@ -64,15 +64,18 @@ function FlowField:getTilePos(tileIndex)
 	return row * TILE_SIZE, column * TILE_SIZE
 end
 
-function FlowField:draw()
+function FlowField:debugDraw()
 	love.graphics.setLineWidth(1)
 	local tileX, tileY, tileCenterX, tileCenterY
 	for index, tile in ipairs(self.tiles) do
 		tileX, tileY = self:getTilePos(index)
 		tileCenterX, tileCenterY = tileX + (TILE_SIZE / 2), tileY + (TILE_SIZE / 2)
 		
-		--love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)			
-		--love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
+		-- draw cells
+		love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)
+		
+		-- draw flow direction
+		love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
 	end
 end
 

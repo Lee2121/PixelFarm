@@ -14,7 +14,7 @@ local PixelMeshVertextFormat = {
 }
 
 function PixelManager:init()
-	love.graphics.setPointSize(5)
+	love.graphics.setPointSize(2.5)
 	self.pixelMesh = love.graphics.newMesh(PixelMeshVertextFormat, MAX_PIXELS, "points", "dynamic")
 	self.pixelMeshShader = love.graphics.newShader("src/framework/pixels/pixelMeshShader.glsl")
 end
@@ -60,11 +60,13 @@ function PixelManager:update(dt)
 		-- bounce on x
 		if posX > SimulationBoundary.boundaryRect.xMax or posX < SimulationBoundary.boundaryRect.xMin then
 			velX = velX * -BOUNDARY_BOUNCE_RESTITUTION
+			posX = (posX > SimulationBoundary.boundaryRect.xMax and SimulationBoundary.boundaryRect.xMax or SimulationBoundary.boundaryRect.xMin) -- snap pixel back into bounds
 		end
 
 		-- bounce on y
 		if posY > SimulationBoundary.boundaryRect.yMax or posY < SimulationBoundary.boundaryRect.yMin then
 			velY = velY * -BOUNDARY_BOUNCE_RESTITUTION
+			posY = (posY > SimulationBoundary.boundaryRect.yMax and SimulationBoundary.boundaryRect.yMax or SimulationBoundary.boundaryRect.yMin) -- snap pixel back into bounds
 		end
 
 		-- read from the flow field

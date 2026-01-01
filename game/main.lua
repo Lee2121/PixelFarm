@@ -67,7 +67,7 @@ function love.draw()
 	
 		PixelManager:draw()
 		SimulationBoundary:draw()
-		FlowField:draw()
+		--FlowField:debugDraw()
 
 	GameCamera:detach()
 
