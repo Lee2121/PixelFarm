@@ -1,18 +1,10 @@
 local FlowField = {}
 
-local TILE_SIZE = 16
-
-local FlowFieldTile = {}
-setmetatable(FlowFieldTile, FlowFieldTile)
-
-function FlowFieldTile:__call()
-	local newTile = setmetatable({}, self)
-	newTile.flowX, newTile.flowY = 0, 0
-	return newTile
-end
+local FlowFieldTile = require "src.framework.flowField.flowFieldTile"
 
 function FlowField:init()
 	self.tiles = {}
+	self.modifiers = {}
 	self.edgeLength = SimulationBoundary.boundaryRect.width / TILE_SIZE
 
 	for tileIndex = 1, (self.edgeLength * self.edgeLength), 1 do
@@ -20,31 +12,28 @@ function FlowField:init()
 	end
 end
 
-function FlowField:update(dt)
-	local mouseX, mouseY = GameCamera:mousePosition()
-	local tileX, tileY
-	local dist
-	local dirX, dirY
-	local dx, dy
-	for index, tile in ipairs(self.tiles) do
+function FlowField:addModifier(modifier)
+	table.insert(self.modifiers, modifier)
+end
 
-		tileX, tileY = self:getTilePos(index)
-		
-		dx = (mouseX - tileX)
-		dy = (mouseY - tileY)
-		
-		dist = math.sqrt(dx * dx + dy * dy)
-		
-		if dist > 0 then
-			dirX = dx/dist
-			dirY = dy/dist
-		else
-			dirX = 0
-			dirY = 0
+function FlowField:removeModifier(modifier)
+	for index = 1, #self.modifiers, 1 do
+		if self.modifiers[index] == modifier then
+			table.remove(self.modifiers, index)
+			break
 		end
+	end
+end
 
-		tile.flowX = dirX
-		tile.flowY = dirY
+function FlowField:update(dt)
+	for i = 1, #self.modifiers, 1 do
+		self.modifiers[i]:initFrame()
+	end
+	for tileIndex, tile in ipairs(self.tiles) do
+		for modifierIndex = 1, #self.modifiers, 1 do
+			-- TODO - modifiers should be apply in an additive way
+			tile.flowX, tile.flowY = self.modifiers[modifierIndex]:calcTileFlow(tileIndex)
+		end
 	end
 end
 

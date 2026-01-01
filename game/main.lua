@@ -2,8 +2,11 @@ HumpCamera = require "lib.hump.camera"
 BackgroundGrid = require "src.framework.grid.backgroundGrid"
 
 PixelManager = require "src.framework.pixels.pixelManager"
-FlowField = require "src.framework.flowField.flowField"
 SimulationBoundary = require "src.framework.simulationBoundary"
+
+FlowField = require "src.framework.flowField.flowField"
+FlowFieldModifiers = require "src.framework.flowField.flowFieldModifier"
+MouseFieldModifier = FlowFieldModifier_Mouse(50)
 
 DebugCommands = require "src.framework.debugCommands"
 
@@ -24,6 +27,7 @@ function love.load()
 	BackgroundGrid:init()
 
 	FlowField:init()
+	FlowField:addModifier(MouseFieldModifier)
 
 	PixelManager:init()
 	PixelManager:spawnPixels(MAX_PIXELS)
