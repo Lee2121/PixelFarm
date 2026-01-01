@@ -21,7 +21,31 @@ function FlowField:init()
 end
 
 function FlowField:update(dt)
-	
+	local mouseX, mouseY = GameCamera:mousePosition()
+	local tileX, tileY
+	local dist
+	local dirX, dirY
+	local dx, dy
+	for index, tile in ipairs(self.tiles) do
+
+		tileX, tileY = self:getTilePos(index)
+		
+		dx = (mouseX - tileX)
+		dy = (mouseY - tileY)
+		
+		dist = math.sqrt(dx * dx + dy * dy)
+		
+		if dist > 0 then
+			dirX = dx/dist
+			dirY = dy/dist
+		else
+			dirX = 0
+			dirY = 0
+		end
+
+		tile.flowX = dirX
+		tile.flowY = dirY
+	end
 end
 
 function FlowField:getFlowAtWorldCoord(x, y)
@@ -42,13 +66,21 @@ function FlowField:getFlowAtWorldCoord(x, y)
 
 end
 
+function FlowField:getTilePos(tileIndex)
+	local row = (tileIndex - 1) % self.edgeLength
+	local column = (tileIndex - 1 - row) / self.edgeLength
+	return row * TILE_SIZE, column * TILE_SIZE
+end
+
 function FlowField:draw()
 	love.graphics.setLineWidth(1)
-	local row, column
+	local tileX, tileY, tileCenterX, tileCenterY
 	for index, tile in ipairs(self.tiles) do
-		row = (index - 1) % self.edgeLength
-		column = (index - 1 - row) / self.edgeLength
-		love.graphics.rectangle("line", row * TILE_SIZE, column * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+		tileX, tileY = self:getTilePos(index)
+		tileCenterX, tileCenterY = tileX + (TILE_SIZE / 2), tileY + (TILE_SIZE / 2)
+		
+		love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)
+		love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
 	end
 end
 
