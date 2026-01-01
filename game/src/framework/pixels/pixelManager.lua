@@ -33,6 +33,8 @@ function PixelManager:spawnPixels(num)
 end
 
 function PixelManager:update(dt)
+	if #self.pixelData == 0 then return end
+	
 	self.pixelMesh:setVertices(self.pixelData, 1, #self.pixelData)
 	self.time = self.time + dt
 	self.simpleTimer = self.simpleTimer + dt

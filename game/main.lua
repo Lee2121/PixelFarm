@@ -16,7 +16,7 @@ local camTargetX, camTargetY = 0, 0
 function love.load()
 	love.graphics.setDefaultFilter( 'nearest', 'nearest' )
 
-	SimulationBoundary:init(1024)
+	SimulationBoundary:init(512)
 
 	camTargetX, camTargetY = SimulationBoundary.boundaryRect.width / 2, SimulationBoundary.boundaryRect.height / 2
 	GameCamera = HumpCamera(camTargetX, camTargetY)
@@ -30,6 +30,9 @@ function love.load()
 end
 
 function love.update(dt)
+
+	-- limit DT
+	if dt > .007 then dt = .007 end
 	
 	FlowField:update(dt)
 
@@ -49,6 +52,8 @@ function love.update(dt)
 		cameraInput[2] = cameraInput[2] + 1
 	end
 
+	FlowField:getFlowAtWorldCoord(GameCamera:mousePosition())
+
 	camTargetX = camTargetX + cameraInput[1] * dt * CAMERA_SPEED
 	camTargetY = camTargetY + cameraInput[2] * dt * CAMERA_SPEED
 	GameCamera:lockPosition(camTargetX, camTargetY, GameCamera.smooth.damped(2))
@@ -66,7 +71,6 @@ function love.draw()
 
 	GameCamera:detach()
 
-	
-
 	love.graphics.print("Current FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+	love.graphics.print("Num Particles: "..tostring(#PixelManager.pixelData), 10, 30)
 end
