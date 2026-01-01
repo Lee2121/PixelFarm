@@ -49,21 +49,9 @@ function FlowField:update(dt)
 end
 
 function FlowField:getFlowAtWorldCoord(x, y)
-
-	local columnIndex = y % TILE_SIZE
-	local rowIndex = x % TILE_SIZE
-
-	-- local column = self.tileColums[columnIndex]
-	-- if column == nil then
-	-- 	self.tileColums[columnIndex] = {}
-	-- 	self.tileColums[columnIndex][rowIndex] = FlowFieldTile()
-	-- else
-	-- 	local row = column[columnIndex]
-	-- 	if row == nil then
-	-- 		-- create new row
-	-- 	end
-	-- end
-
+	local rowIndex = math.max(math.floor((x / TILE_SIZE)), 1)
+	local columnIndex = math.max(math.floor(y / TILE_SIZE), 1)
+	return self.tiles[columnIndex * rowIndex].flowX, self.tiles[columnIndex * rowIndex].flowY
 end
 
 function FlowField:getTilePos(tileIndex)
@@ -79,8 +67,8 @@ function FlowField:draw()
 		tileX, tileY = self:getTilePos(index)
 		tileCenterX, tileCenterY = tileX + (TILE_SIZE / 2), tileY + (TILE_SIZE / 2)
 		
-		love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)
-		love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
+		--love.graphics.rectangle("line", tileX, tileY, TILE_SIZE, TILE_SIZE)
+		--love.graphics.line(tileCenterX, tileCenterY, tileCenterX + tile.flowX * 10, tileCenterY + tile.flowY * 10)
 	end
 end
 

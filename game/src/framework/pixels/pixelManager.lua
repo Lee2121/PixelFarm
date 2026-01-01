@@ -37,6 +37,8 @@ function PixelManager:update(dt)
 	self.time = self.time + dt
 	self.simpleTimer = self.simpleTimer + dt
 
+	local flowX, flowY
+
 	for pixel = 1, #self.pixelData, 1 do
 
 		-- bounce on x
@@ -50,6 +52,9 @@ function PixelManager:update(dt)
 		end
 
 		-- calculate the new velocity
+		flowX, flowY = FlowField:getFlowAtWorldCoord(self.pixelData[pixel][1], self.pixelData[pixel][2])
+		self.pixelVelocity[pixel][1] = self.pixelVelocity[pixel][1] + flowX
+		self.pixelVelocity[pixel][2] = self.pixelVelocity[pixel][2] + flowY
 		--self.pixelVelocity[pixel][1] = clampAbs(self.pixelVelocity[pixel][1] + ((mouseX - self.pixelData[pixel][1]) * .1 * dt), 30)
 		--self.pixelVelocity[pixel][2] = clampAbs(self.pixelVelocity[pixel][2] + ((mouseY - self.pixelData[pixel][2]) * .1 * dt), 30)
 
