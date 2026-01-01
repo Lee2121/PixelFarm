@@ -28,7 +28,8 @@ function FlowField:removeModifier(modifier)
 end
 
 function FlowField:update(dt)
-	for i = 1, #self.modifiers, 1 do
+	-- reverse order, in case any modifiers decide they should be deleted
+	for i = #self.modifiers, 1, -1 do
 		self.modifiers[i]:initUpdate(dt)
 	end
 	for tileIndex, tile in ipairs(self.tiles) do

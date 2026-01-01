@@ -6,7 +6,6 @@ SimulationBoundary = require "src.framework.simulationBoundary"
 
 FlowField = require "src.framework.flowField.flowField"
 FlowFieldModifiers = require "src.framework.flowField.flowFieldModifier"
-MouseFieldModifier = FlowFieldModifier_Mouse(1000)
 
 DebugCommands = require "src.framework.debugCommands"
 
@@ -27,7 +26,9 @@ function love.load()
 	BackgroundGrid:init()
 
 	FlowField:init()
-	FlowField:addModifier(MouseFieldModifier)
+	local mouseX, mouseY = GameCamera:mousePosition()
+	local mouseFieldModifier = FlowFieldModifier_Mouse(mouseX, mouseY, 30)
+	FlowField:addModifier(mouseFieldModifier)
 
 	PixelManager:init()
 	PixelManager:spawnPixels(MAX_PIXELS)

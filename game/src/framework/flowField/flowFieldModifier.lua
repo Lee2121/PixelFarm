@@ -2,13 +2,13 @@ local FlowFieldModifier_Base = {}
 setmetatable(FlowFieldModifier_Base, FlowFieldModifier_Base)
 FlowFieldModifier_Base.__index = FlowFieldModifier_Base
 
-function FlowFieldModifier_Base:__call(size)
+function FlowFieldModifier_Base:__call(posX, posY, size, ...)
 	local newModifier = setmetatable({}, self)
+	newModifier.posX, newModifier.posY = posX, posY
 	newModifier.size = size
-	newModifier.posX, newModifier.posY = 0, 0
 	newModifier.tileDistances = {} -- caches off the distance to any tiles in range
 	newModifier.bEnabled = true
-	newModifier:new()
+	newModifier:new(...)
 	newModifier.__index = self
 	return newModifier
 end
@@ -20,7 +20,7 @@ function FlowFieldModifier_Base:extend()
 	return newModifier
 end
 
-function FlowFieldModifier_Base:new()
+function FlowFieldModifier_Base:new(...)
 end
 
 local dx, dy = 0, 0
@@ -45,7 +45,7 @@ function FlowFieldModifier_Base:calcTileFlow(tile)
 end
 
 FlowFieldModifier_Mouse = FlowFieldModifier_Base:extend()
-function FlowFieldModifier_Mouse:new()
+function FlowFieldModifier_Mouse:new(...)
 	self.prevPosX, self.prevPosY = self.posX, self.posY
 	self.mouseVelX, self.mouseVelY = 0, 0
 end
@@ -84,6 +84,45 @@ function FlowFieldModifier_Mouse:calcTileFlow(tile)
 	else
 		flowX = 0
 		flowY = 0
+	end
+
+	return flowX, flowY
+end
+
+FlowFieldModifier_Whirlpool = FlowFieldModifier_Base:extend()
+function FlowFieldModifier_Whirlpool:new(initialIntensity, lifetime)
+	self.initialIntensity = initialIntensity
+	self.currentIntensity = initialIntensity
+	self.lifetime = lifetime
+	self.lifetimeTimer = 0
+	self.initialSize = self.size
+end
+
+local intensityAlpha = 0
+function FlowFieldModifier_Whirlpool:initUpdate(dt)
+	self.lifetimeTimer = self.lifetimeTimer + dt
+
+	-- clean ourselves up if our lifetime is done
+	if self.lifetimeTimer > self.lifetime then
+		FlowField:removeModifier(self)
+		return
+	end
+
+	self.currentIntensity = self.initialIntensity - (self.initialIntensity * (self.lifetimeTimer / self.lifetime))
+	self.size = self.initialSize - (self.initialSize * (self.lifetimeTimer / self.lifetime) )
+end
+
+local dx, dy
+local dist
+function FlowFieldModifier_Whirlpool:calcTileFlow(tile)
+	dist = self.tileDistances[tile.tileIndex]
+	dx = (self.posX - tile.posX)
+	dy = (self.posY - tile.posY)
+	
+	if dist > 0 then
+		-- calc normalized direction
+		flowX = dx/dist
+		flowY = dy/dist
 	end
 
 	return flowX, flowY
