@@ -47,32 +47,36 @@ function PixelManager:update(dt)
 	local flowX, flowY
 	local pixelData
 	local pixelVelocity
+	local posX, posY
+	local velX, velY
 
 	for pixel = 1, #self.pixelData, 1 do
 
 		pixelData = self.pixelData[pixel]
+		posX, posY = pixelData[1], pixelData[2]
 		pixelVelocity = self.pixelVelocity[pixel]
+		velX, velY =  pixelVelocity[1], pixelVelocity[2]
 
 		-- bounce on x
-		if pixelData[1] > SimulationBoundary.boundaryRect.xMax or pixelData[1] < SimulationBoundary.boundaryRect.xMin then
-			pixelVelocity[1] = pixelVelocity[1] * -BOUNDARY_BOUNCE_RESTITUTION
+		if posX > SimulationBoundary.boundaryRect.xMax or posX < SimulationBoundary.boundaryRect.xMin then
+			velX = velX * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
 		-- bounce on y
-		if pixelData[2] > SimulationBoundary.boundaryRect.yMax or pixelData[2] < SimulationBoundary.boundaryRect.yMin then
-			pixelVelocity[2] = pixelVelocity[2] * -BOUNDARY_BOUNCE_RESTITUTION
+		if posY > SimulationBoundary.boundaryRect.yMax or posY < SimulationBoundary.boundaryRect.yMin then
+			velY = velY * -BOUNDARY_BOUNCE_RESTITUTION
 		end
 
-		-- calculate the new velocity
-		flowX, flowY = FlowField:getFlowAtWorldCoord(pixelData[1], pixelData[2])
-		pixelVelocity[1] = clampVelocity(pixelVelocity[1] + flowX, MAX_PIXEL_SPEED)
-		pixelVelocity[2] = clampVelocity(pixelVelocity[2] + flowY, MAX_PIXEL_SPEED)
-		--pixelVelocity[1] = clampAbs(pixelVelocity[1] + ((mouseX - pixelData[1]) * .1 * dt), 30)
-		--pixelVelocity[2] = clampAbs(pixelVelocity[2] + ((mouseY - pixelData[2]) * .1 * dt), 30)
+		-- read from the flow field
+		flowX, flowY = FlowField:getFlowAtWorldCoord(posX, posY)
 
-		-- apply pixel's current velocity to its position
-		pixelData[1] = pixelData[1] + (pixelVelocity[1] * dt)
-		pixelData[2] = pixelData[2] + (pixelVelocity[2] * dt)
+		-- apply calculated velocity to the pixel's velocity
+		pixelVelocity[1] = clampVelocity(velX + flowX, MAX_PIXEL_SPEED)
+		pixelVelocity[2] = clampVelocity(velY + flowY, MAX_PIXEL_SPEED)
+
+		-- apply pixel's velocity to its position
+		pixelData[1] = posX + (velX * dt)
+		pixelData[2] = posY + (velY * dt)
 	end
 end
 
