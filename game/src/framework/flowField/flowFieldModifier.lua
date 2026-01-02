@@ -114,16 +114,28 @@ end
 
 local dx, dy
 local dist
+local WHIRLPOOL_ANGLE = 45
+local cs = math.cos(math.rad(WHIRLPOOL_ANGLE))
+local sn = math.sin(math.rad(WHIRLPOOL_ANGLE))
+local dirX, dirY
 function FlowFieldModifier_Whirlpool:calcTileFlow(tile)
+
 	dist = self.tileDistances[tile.tileIndex]
 	dx = (self.posX - tile.posX)
 	dy = (self.posY - tile.posY)
 	
 	if dist > 0 then
 		-- calc normalized direction
-		flowX = dx/dist
-		flowY = dy/dist
+		dirX = dx/dist
+		dirY = dy/dist
+	else
+		return 0, 0
 	end
+
+	-- the further from the outside, the more head on the force should be
+
+	flowX = dirX * cs - dirY * sn
+	flowY = dirY * sn + dirY * cs
 
 	return flowX, flowY
 end
